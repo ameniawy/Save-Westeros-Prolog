@@ -1,16 +1,13 @@
 
-whiteWalker(2, 3, s0).
-whiteWalker(1, 3, s0).
-whiteWalker(2, 1, s0).
-whiteWalker(2, 2, s0).
+whiteWalker(0, 0, s0).
+whiteWalker(3, 0, s0).
+whiteWalker(0, 3, s0).
 
-obstacle(2,1).
+obstacle(0, 2).
 
-dragonStone(3,1).
+dragonStone(1,2).
 
 maxGlass(3).
-
-remWalkers(4).
 
 gridShape(4,4).
 
