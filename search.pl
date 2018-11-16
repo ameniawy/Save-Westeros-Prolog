@@ -29,11 +29,11 @@ validCell(X, Y, Situation):-
 % if action is to move right
 % CDG -> current Dragon Glass
 jonAt(X,Y, CDG, result(Action, Situation)):-
-    ((Action = right, jonAt(X - 1, Y, CDG, Situation);
-     (Action = left, jonAt(X + 1, Y, CDG, Situation);
-     (Action = up, jonAt(X, Y-1, CDG, Situation);
-     (Action = down, jonAt(X, Y+1, CDG, Situation))
-    validCell(X,Y).
+    ((Action = right, jonAt(X - 1, Y, CDG, Situation));
+     (Action = left, jonAt(X + 1, Y, CDG, Situation));
+     (Action = up, jonAt(X, Y + 1, CDG, Situation));
+     (Action = down, jonAt(X, Y - 1, CDG, Situation))),
+    validCell(X,Y, Situation).
 
 % if action is kill
 jonAt(X, Y, CDG, result(Action, Situation)):-
@@ -45,7 +45,7 @@ jonAt(X, Y, CDG, result(Action, Situation)):-
 jonAt(X, Y, Max, result(Action, Situation)):-
     maxGlass(Max),
     (Action = refill),
-    dragonGlass(X, Y),
+    dragonStone(X, Y),
     jonAt(X, Y, _, Situation).
 
 
@@ -77,12 +77,13 @@ whiteWalker(X, Y, result(Action, Situation)):-
 goalTest(Situation):-
     \+ whiteWalker(_, _, Situation).
     
-run(Situation):-
+run(_, Situation):-
     goalTest(Situation),
     jonAt(_, _, _, Situation).
 
-run(Situation):-
-    jonAt(_, _, _, result(Action, Situation)),
-    run(result(Action, Situation)).
+run(Situation, result(Action, Result)):-
+    jonAt(3, 3, 0, result(Action, Situation)),
+    ((Action is right); (Action is left); (Action is up); (Action is down); (Action is kill); (Action is refill)),
+    run(result(Action, Situation), Result).
 
 
