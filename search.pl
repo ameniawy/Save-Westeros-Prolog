@@ -81,3 +81,8 @@ run(Situation):-
     goalTest(Situation),
     jonAt(_, _, _, Situation).
 
+run(Situation):-
+    jonAt(_, _, _, result(Action, Situation)),
+    run(result(Action, Situation)).
+
+
