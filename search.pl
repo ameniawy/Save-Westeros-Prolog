@@ -15,9 +15,6 @@ remWalkers(4).
 gridShape(4,4).
 
 
-currentDragonGlass(0, s0).
-
-
 jonAt(3, 3, 0, s0).
 
 
@@ -25,9 +22,9 @@ validCell(X, Y, Situation):-
     \+ whiteWalker(X, Y, Situation),
     \+ (obstacle(X,Y)),
     gridShape(R,C),
-    \+ (X > R),
+    \+ (X > R-1),
     \+ (X < 0),
-    \+ (Y > C),
+    \+ (Y > C-1),
     \+ (Y < 0).
 
 
