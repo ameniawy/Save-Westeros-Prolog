@@ -77,13 +77,13 @@ whiteWalker(X, Y, result(Action, Situation)):-
 goalTest(Situation):-
     \+ whiteWalker(_, _, Situation).
     
-run(_, Situation):-
+run(Situation):-
     goalTest(Situation),
     jonAt(_, _, _, Situation).
 
-run(Situation, result(Action, Result)):-
-    jonAt(3, 3, 0, result(Action, Situation)),
-    ((Action is right); (Action is left); (Action is up); (Action is down); (Action is kill); (Action is refill)),
-    run(result(Action, Situation), Result).
+run(Situation):-
+    jonAt(_, _, _, result(Action, Situation)),
+    ((Action = right); (Action = left); (Action = up); (Action = down); (Action = kill); (Action = refill)),
+    run(result(Action, Situation)).
 
 
