@@ -34,17 +34,26 @@ validCell(X, Y, Situation):-
 % if action is to move right
 % CDG -> current Dragon Glass
 jonAt(X,Y, CDG, result(Action, Situation)):-
-    ((Action = right, jonAt(X - 1, Y, CDG, Situation));
-     (Action = left, jonAt(X + 1, Y, CDG, Situation));
-     (Action = up, jonAt(X, Y + 1, CDG, Situation));
-     (Action = down, jonAt(X, Y - 1, CDG, Situation))),
+    X1 is X - 1,
+    X2 is X + 1,
+    Y1 is Y + 1,
+    Y2 is Y - 1,
+    ((Action = right, jonAt(X1, Y, CDG, Situation));
+     (Action = left, jonAt(X2, Y, CDG, Situation));
+     (Action = up, jonAt(X, Y1, CDG, Situation));
+     (Action = down, jonAt(X, Y2, CDG, Situation))),
     validCell(X,Y, Situation).
 
 % if action is kill
 jonAt(X, Y, CDG, result(Action, Situation)):-
     (Action = kill),
-    jonAt(X, Y, CDG + 1, Situation), 
-    (whiteWalker(X+1, Y, 1, Situation); whiteWalker(X-1, Y, 1, Situation); whiteWalker(X, Y+1, 1, Situation); whiteWalker(X, Y-1, 1, Situation)).
+    CDG1 is CDG + 1,
+    jonAt(X, Y, CDG1, Situation),
+    X1 is X + 1,
+    X2 is X - 1,
+    Y1 is Y + 1,
+    Y2 is Y - 1,
+    (whiteWalker(X1, Y, 1, Situation); whiteWalker(X2, Y, 1, Situation); whiteWalker(X, Y1, 1, Situation); whiteWalker(X, Y2, 1, Situation)).
 
 
 % dead white walker??
@@ -69,53 +78,46 @@ whiteWalker(X, Y, 1, result(Action, Situation)):-
 whiteWalker(X, Y, 1, result(kill, Situation)):-
     whiteWalker(X, Y, 1, Situation),
     % (Action = kill),
-    \+ jonAt(X + 1, Y, _, Situation),
-    \+ jonAt(X - 1, Y, _, Situation),
-    \+ jonAt(X, Y + 1, _, Situation),
-    \+ jonAt(X, Y - 1, _, Situation).
+    X1 is X + 1,
+    X2 is X - 1,
+    Y1 is Y + 1,
+    Y2 is Y - 1,
+    \+ jonAt(X1, Y, _, Situation),
+    \+ jonAt(X2, Y, _, Situation),
+    \+ jonAt(X, Y1, _, Situation),
+    \+ jonAt(X, Y2, _, Situation).
 
 % if the action was a kill and Jon was in a neighbouring cell but had no dragonGlass.
 whiteWalker(X, Y, 1, result(kill, Situation)):-
     whiteWalker(X, Y, 1, Situation),
-    % (Action = kill),
-    (jonAt(X + 1, Y, 0, Situation);
-    jonAt(X - 1, Y, 0, Situation);
-    jonAt(X, Y + 1, 0, Situation);
-    jonAt(X, Y - 1, 0, Situation)).
+    X1 is X + 1,
+    X2 is X - 1,
+    Y1 is Y + 1,
+    Y2 is Y - 1,
+    (jonAt(X1, Y, 0, Situation);
+    jonAt(X2, Y, 0, Situation);
+    jonAt(X, Y1, 0, Situation);
+    jonAt(X, Y2, 0, Situation)).
 
 
+% when is a white walker dead? if the action was a kill and it was alive in the previous situation
 % dead when whiteWalker(X, Y, Alive, result(kill, S))
 whiteWalker(X, Y, 0, result(kill, Situation)):-
     whiteWalker(X, Y, 1, Situation),
     % continue with conditions for death
-    (jonAt(X + 1, Y, 0, Situation);
-    jonAt(X - 1, Y, 0, Situation);
-    jonAt(X, Y + 1, 0, Situation);
-    jonAt(X, Y - 1, 0, Situation)).
+    X1 is X + 1,
+    X2 is X - 1,
+    Y1 is Y + 1,
+    Y2 is Y - 1,
+    (jonAt(X1, Y, DG, Situation);
+    jonAt(X2, Y, DG, Situation);
+    jonAt(X, Y1, DG, Situation);
+    jonAt(X, Y2, DG, Situation)),
+    \+ (DG = 0).
 
 
 
 % for all white walkers their alive flag is 0
-
-
-
-
-
-
-%goal test
-goalTest(Situation):-
-    \+ whiteWalker(_, _, 1, Situation).
-    
-run(Situation):-
-    goalTest(Situation),
-    jonAt(_, _, _, Situation).
-
-run(Situation):-
-    jonAt(_, _, _, result(Action, Situation)),
-    ((Action = right); (Action = left); (Action = up); (Action = down); (Action = kill); (Action = refill)),
-    run(result(Action, Situation)).
-
-
 
 
 
