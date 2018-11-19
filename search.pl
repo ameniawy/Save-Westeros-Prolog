@@ -128,6 +128,10 @@ whiteWalker(X, Y, 0, result(kill, Situation)):-
     jonAt(X, Y2, DG, Situation)),
     \+ (DG = 0).
 
+whiteWalker(X, Y, 0, result(Action, Situation)):-
+    whiteWalker(X, Y, 0, Situation),
+    ((Action = kill); (Action = refill); (Action = up); (Action = down); (Action = left); (Action = right)).
+
 
 
 % for all white walkers their alive flag is 0
