@@ -1,27 +1,32 @@
 
-whiteWalker(0, 0, s0).
-whiteWalker(3, 0, s0).
-whiteWalker(0, 3, s0).
+% WW EE OO
+% EE EE DS
+% WW EE JS
+
+
+whiteWalker(0, 0, 1, s0).      
+whiteWalker(2, 0, 1, s0).
+
 
 obstacle(0, 2).
 
 dragonStone(1,2).
 
-maxGlass(3).
+maxGlass(2).
 
-gridShape(4,4).
+gridShape(3,3).
 
 
-jonAt(3, 3, 0, s0).
+jonAt(2, 2, 0, s0).
 
 
 validCell(X, Y, Situation):-
-    \+ whiteWalker(X, Y, Situation),
+    \+ whiteWalker(X, Y, 1, Situation),
     \+ (obstacle(X,Y)),
     gridShape(R,C),
-    \+ (X > R-1),
+    (X < R),
     \+ (X < 0),
-    \+ (Y > C-1),
+    (Y < C),
     \+ (Y < 0).
 
 
@@ -39,7 +44,12 @@ jonAt(X,Y, CDG, result(Action, Situation)):-
 jonAt(X, Y, CDG, result(Action, Situation)):-
     (Action = kill),
     jonAt(X, Y, CDG + 1, Situation), 
-    (whiteWalker(X+1, Y, Situation); whiteWalker(X-1, Y, Situation); whiteWalker(X, Y+1, Situation); whiteWalker(X, Y-1, Situation)).
+    (whiteWalker(X+1, Y, 1, Situation); whiteWalker(X-1, Y, 1, Situation); whiteWalker(X, Y+1, 1, Situation); whiteWalker(X, Y-1, 1, Situation)).
+
+
+% dead white walker??
+% killedWalker
+
 
 % if action is refill
 jonAt(X, Y, Max, result(Action, Situation)):-
@@ -51,27 +61,46 @@ jonAt(X, Y, Max, result(Action, Situation)):-
 
 % WHITE WALKERS SUCCESSOR STATE AXIOMS
 % if white walker existed in the previous sitation in this location and the action was not a kill.
-whiteWalker(X, Y, result(Action, Situation)):-
-    whiteWalker(X, Y, Situation),
+whiteWalker(X, Y, 1, result(Action, Situation)):-
+    whiteWalker(X, Y, 1, Situation),
     ((Action = right); (Action = left); (Action = up); (Action = down); (Action = refill)).
 
 % if the action was a kill but Jon was not in the neighbouring cells.
-whiteWalker(X, Y, result(Action, Situation)):-
-    whiteWalker(X, Y, Situation),
-    (Action = kill),
+whiteWalker(X, Y, 1, result(kill, Situation)):-
+    whiteWalker(X, Y, 1, Situation),
+    % (Action = kill),
     \+ jonAt(X + 1, Y, _, Situation),
     \+ jonAt(X - 1, Y, _, Situation),
     \+ jonAt(X, Y + 1, _, Situation),
     \+ jonAt(X, Y - 1, _, Situation).
 
 % if the action was a kill and Jon was in a neighbouring cell but had no dragonGlass.
-whiteWalker(X, Y, result(Action, Situation)):-
-    whiteWalker(X, Y, Situation),
-    (Action = kill),
+whiteWalker(X, Y, 1, result(kill, Situation)):-
+    whiteWalker(X, Y, 1, Situation),
+    % (Action = kill),
     (jonAt(X + 1, Y, 0, Situation);
     jonAt(X - 1, Y, 0, Situation);
     jonAt(X, Y + 1, 0, Situation);
     jonAt(X, Y - 1, 0, Situation)).
+
+
+% dead when whiteWalker(X, Y, Alive, result(kill, S))
+whiteWalker(X, Y, 0, result(kill, Situation)):-
+    whiteWalker(X, Y, 1, Situation),
+    % continue with conditions for death
+    (jonAt(X + 1, Y, 0, Situation);
+    jonAt(X - 1, Y, 0, Situation);
+    jonAt(X, Y + 1, 0, Situation);
+    jonAt(X, Y - 1, 0, Situation)).
+
+
+
+% for all white walkers their alive flag is 0
+
+
+
+
+
 
 %goal test
 goalTest(Situation):-
