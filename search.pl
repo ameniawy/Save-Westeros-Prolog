@@ -1,14 +1,16 @@
 
-% WW EE OO
-% EE EE DS
-% WW EE JS
+%% WW EE WW
+%% EE EE EE
+%% OO DS JS
 
+discontiguous(whiteWalker/4).
+discontiguous(jonAt/4).
 
-whiteWalker(0, 0, 1, s0).      
+whiteWalker(0, 2, 1, s0).      
 whiteWalker(2, 0, 1, s0).
 
 
-obstacle(0, 2).
+obstacle(0, 0).
 
 dragonStone(1,2).
 
@@ -34,6 +36,8 @@ validCell(X, Y, Situation):-
 % if action is to move right
 % CDG -> current Dragon Glass
 jonAt(X,Y, CDG, result(Action, Situation)):-
+    nonvar(X),
+    nonvar(Y),
     X1 is X - 1,
     X2 is X + 1,
     Y1 is Y + 1,
@@ -47,8 +51,11 @@ jonAt(X,Y, CDG, result(Action, Situation)):-
 % if action is kill
 jonAt(X, Y, CDG, result(Action, Situation)):-
     (Action = kill),
+    nonvar(CDG),
     CDG1 is CDG + 1,
     jonAt(X, Y, CDG1, Situation),
+    nonvar(X),
+    nonvar(Y),
     X1 is X + 1,
     X2 is X - 1,
     Y1 is Y + 1,
@@ -78,6 +85,8 @@ whiteWalker(X, Y, 1, result(Action, Situation)):-
 whiteWalker(X, Y, 1, result(kill, Situation)):-
     whiteWalker(X, Y, 1, Situation),
     % (Action = kill),
+    nonvar(X),
+    nonvar(Y),
     X1 is X + 1,
     X2 is X - 1,
     Y1 is Y + 1,
@@ -90,6 +99,8 @@ whiteWalker(X, Y, 1, result(kill, Situation)):-
 % if the action was a kill and Jon was in a neighbouring cell but had no dragonGlass.
 whiteWalker(X, Y, 1, result(kill, Situation)):-
     whiteWalker(X, Y, 1, Situation),
+    nonvar(X),
+    nonvar(Y),
     X1 is X + 1,
     X2 is X - 1,
     Y1 is Y + 1,
@@ -105,6 +116,8 @@ whiteWalker(X, Y, 1, result(kill, Situation)):-
 whiteWalker(X, Y, 0, result(kill, Situation)):-
     whiteWalker(X, Y, 1, Situation),
     % continue with conditions for death
+    nonvar(X),
+    nonvar(Y),
     X1 is X + 1,
     X2 is X - 1,
     Y1 is Y + 1,
@@ -118,6 +131,13 @@ whiteWalker(X, Y, 0, result(kill, Situation)):-
 
 
 % for all white walkers their alive flag is 0
+
+findPath(S):-
+    forall(whiteWalker(X,Y,1,s0),
+    whiteWalker(X,Y,0,S)).
+
+findPath2(S):-
+    run((whiteWalker(0,2,0,S),whiteWalker(2,0,0,S))).
 
 
 
