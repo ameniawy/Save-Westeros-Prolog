@@ -104,7 +104,7 @@ whiteWalker(X, Y, 0, result(kill, Situation)):-
 
 %goal test
 goalTest(Situation):-
-    \+ whiteWalker(_, _, Situation).
+    \+ whiteWalker(_, _, 1, Situation).
     
 run(Situation):-
     goalTest(Situation),
@@ -116,3 +116,24 @@ run(Situation):-
     run(result(Action, Situation)).
 
 
+
+
+
+%%main predicate to run the code where Q represent query to be used
+run(Q):-
+  run_helper(Q,3).
+
+%%helper for the main predicate just to have the initial starting depth called I
+run_helper(Q, I):-
+  call_with_depth_limit(Q,I,R),
+  run_helper2(Q,I,R).
+
+%%checks if R is not depth_limit_exceeded then the agent have found a solution so it stops and returns this solution
+run_helper2(_, _, R):-
+  R \= depth_limit_exceeded.
+
+%%checks if R is depth_limit_exceeded then the agent have not found a solution so it increments the depth to search in a deeper level
+run_helper2(Q, I, R):-
+  R == depth_limit_exceeded,
+  I1 is I +1,
+  run_helper(Q,I1).
