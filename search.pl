@@ -6,11 +6,7 @@
 discontiguous(whiteWalker/4).
 discontiguous(jonAt/4).
 
-whiteWalker(0, 2, 1, s0).      
-whiteWalker(2, 0, 1, s0).
-
-
-obstacle(0, 0).
+obstacle(0, 2).
 
 dragonStone(1,2).
 
@@ -21,7 +17,11 @@ gridShape(3,3).
 
 jonAt(2, 2, 0, s0).
 
+whiteWalker(0, 0, 1, s0).      
+whiteWalker(2, 0, 1, s0).
+whiteWalker(0, 1, 1, s0).
 
+%checks if the cell is valid: does not have a living white walker, nor an obstacle and within the grid dimenions.
 validCell(X, Y, Situation):-
     \+ whiteWalker(X, Y, 1, Situation),
     \+ (obstacle(X,Y)),
@@ -32,134 +32,147 @@ validCell(X, Y, Situation):-
     \+ (Y < 0).
 
 
+
 % JONAT SUCCESSOR STATE AXIOMS
-% if action is to move right
+%-----------------------------
+%-----------CASE 1------------
+% if action is to move
 % CDG -> current Dragon Glass
-jonAt(X,Y, CDG, result(Action, Situation)):-
-    nonvar(X),
-    nonvar(Y),
-    X1 is X - 1,
-    X2 is X + 1,
-    Y1 is Y + 1,
-    Y2 is Y - 1,
-    ((Action = right, jonAt(X1, Y, CDG, Situation));
-     (Action = left, jonAt(X2, Y, CDG, Situation));
-     (Action = up, jonAt(X, Y1, CDG, Situation));
-     (Action = down, jonAt(X, Y2, CDG, Situation))),
-    validCell(X,Y, Situation).
 
-% if action is kill
-jonAt(X, Y, CDG, result(Action, Situation)):-
+jonAt(Col,Row, CurrentDG, result(Action, Situation)):-
+    nonvar(Col),
+    nonvar(Row),
+    LeftCol is Col - 1,
+    RightCol is Col + 1,
+    DownRow is Row + 1,
+    UpRow is Row - 1,
+    ((Action = right, jonAt(LeftCol, Row, CurrentDG, Situation));
+     (Action = left, jonAt(RightCol, Row, CurrentDG, Situation));
+     (Action = up, jonAt(Col, DownRow, CurrentDG, Situation));
+     (Action = down, jonAt(Col, UpRow, CurrentDG, Situation))),
+    validCell(Col,Row, Situation).
+
+
+%-----------CASE 2------------
+% if action is a kill and there is a white walker in the neighbouring cells, decrease dragon glasses by 1
+
+jonAt(Col, Row, CurrentDG, result(Action, Situation)):-
     (Action = kill),
-    nonvar(CDG),
-    CDG1 is CDG + 1,
-    jonAt(X, Y, CDG1, Situation),
-    nonvar(X),
-    nonvar(Y),
-    X1 is X + 1,
-    X2 is X - 1,
-    Y1 is Y + 1,
-    Y2 is Y - 1,
-    (whiteWalker(X1, Y, 1, Situation); whiteWalker(X2, Y, 1, Situation); whiteWalker(X, Y1, 1, Situation); whiteWalker(X, Y2, 1, Situation)).
+    nonvar(CurrentDG),
+    OldDG is CurrentDG + 1,
+    jonAt(Col, Row, OldDG, Situation),
+    nonvar(Col),
+    nonvar(Row),
+    RightCol is Col + 1,
+    LeftCol is Col - 1,
+    DownRow is Row + 1,
+    UpRow is Row - 1,
+    (whiteWalker(RightCol, Row, 1, Situation); whiteWalker(LeftCol, Row, 1, Situation); whiteWalker(Col, DownRow, 1, Situation); whiteWalker(Col, UpRow, 1, Situation)).
 
 
-% dead white walker??
-% killedWalker
-
-
+%-----------CASE 3------------
 % if action is refill
-jonAt(X, Y, Max, result(Action, Situation)):-
-    maxGlass(Max),
+% check if there is a dragon stone in this cell, update current DragonGlass to the maximum value.
+
+jonAt(Col, Row, MaxDG, result(Action, Situation)):-
+    maxGlass(MaxDG),
     (Action = refill),
-    dragonStone(X, Y),
-    jonAt(X, Y, _, Situation).
+    dragonStone(Col, Row),
+    jonAt(Col, Row, _, Situation).
+
+
+
 
 
 % WHITE WALKERS SUCCESSOR STATE AXIOMS
-% if white walker existed in the previous sitation in this location and the action was not a kill.
-whiteWalker(X, Y, 1, result(Action, Situation)):-
-    whiteWalker(X, Y, 1, Situation),
+%--------------------------------------
+
+%------------CASE 1--------------------
+% 3rd input is the alive flag: 1 = Alive, 0 = dead
+% a white walker is alive in the result situation, if white walker was alive in the previous situation in this location and the action is not a kill.
+
+whiteWalker(Col, Row, 1, result(Action, Situation)):-
+    whiteWalker(Col, Row, 1, Situation),
     ((Action = right); (Action = left); (Action = up); (Action = down); (Action = refill)).
 
-% if the action was a kill but Jon was not in the neighbouring cells.
-whiteWalker(X, Y, 1, result(kill, Situation)):-
-    whiteWalker(X, Y, 1, Situation),
-    % (Action = kill),
-    nonvar(X),
-    nonvar(Y),
-    X1 is X + 1,
-    X2 is X - 1,
-    Y1 is Y + 1,
-    Y2 is Y - 1,
-    \+ jonAt(X1, Y, _, Situation),
-    \+ jonAt(X2, Y, _, Situation),
-    \+ jonAt(X, Y1, _, Situation),
-    \+ jonAt(X, Y2, _, Situation).
 
-% if the action was a kill and Jon was in a neighbouring cell but had no dragonGlass.
-whiteWalker(X, Y, 1, result(kill, Situation)):-
-    whiteWalker(X, Y, 1, Situation),
-    nonvar(X),
-    nonvar(Y),
-    X1 is X + 1,
-    X2 is X - 1,
-    Y1 is Y + 1,
-    Y2 is Y - 1,
-    (jonAt(X1, Y, 0, Situation);
-    jonAt(X2, Y, 0, Situation);
-    jonAt(X, Y1, 0, Situation);
-    jonAt(X, Y2, 0, Situation)).
+%------------CASE 2--------------------
+% a white walker is alvie in the result of the situation, if white walker was alive in the previous situation 
+% and the action is a kill but Jon was not in the neighbouring cells.
+
+whiteWalker(Col, Row, 1, result(kill, Situation)):-
+    whiteWalker(Col, Row, 1, Situation),
+    nonvar(Col),
+    nonvar(Row),
+    RightCol is Col + 1,
+    LeftCol is Col - 1,
+    DownRow is Row + 1,
+    UpRow is Row - 1,
+    \+ jonAt(RightCol, Row, _, Situation),
+    \+ jonAt(LeftCol, Row, _, Situation),
+    \+ jonAt(Col, DownRow, _, Situation),
+    \+ jonAt(Col, UpRow, _, Situation).
 
 
-% when is a white walker dead? if the action was a kill and it was alive in the previous situation
-% dead when whiteWalker(X, Y, Alive, result(kill, S))
-whiteWalker(X, Y, 0, result(kill, Situation)):-
-    whiteWalker(X, Y, 1, Situation),
-    % continue with conditions for death
-    nonvar(X),
-    nonvar(Y),
-    X1 is X + 1,
-    X2 is X - 1,
-    Y1 is Y + 1,
-    Y2 is Y - 1,
-    (jonAt(X1, Y, DG, Situation);
-    jonAt(X2, Y, DG, Situation);
-    jonAt(X, Y1, DG, Situation);
-    jonAt(X, Y2, DG, Situation)),
-    \+ (DG = 0).
+%------------CASE 3--------------------
+%a white walker stays alive, if it was alive in the previous situation and the action was a kill with Jon in a neighbouring cell but had no dragonGlass.
 
-whiteWalker(X, Y, 0, result(Action, Situation)):-
-    whiteWalker(X, Y, 0, Situation),
+whiteWalker(Col, Row, 1, result(kill, Situation)):-
+    whiteWalker(Col, Row, 1, Situation),
+    nonvar(Col),
+    nonvar(Row),
+    RightCol is Col + 1,
+    LeftCol is Col - 1,
+    DownRow is Row + 1,
+    UpRow is Row - 1,
+    (jonAt(RightCol, Row, 0, Situation);
+    jonAt(LeftCol, Row, 0, Situation);
+    jonAt(Col, DownRow, 0, Situation);
+    jonAt(Col, UpRow, 0, Situation)).
+
+
+%------------CASE 4--------------------
+% when is a white walker dead? 
+%if the action was a kill and it was alive in the previous situation and jon is in a neighbouring cell with enough dragon glasses (>0).
+
+whiteWalker(Col, Row, 0, result(kill, Situation)):-
+    whiteWalker(Col, Row, 1, Situation),
+    nonvar(Col),
+    nonvar(Row),
+    RightCol is Col + 1,
+    LeftCol is Col - 1,
+    DownRow is Row + 1,
+    UpRow is Row - 1,
+    (jonAt(RightCol, Row, OldDG, Situation);
+    jonAt(LeftCol, Row, OldDG, Situation);
+    jonAt(Col, DownRow, OldDG, Situation);
+    jonAt(Col, UpRow, OldDG, Situation)),
+    \+ (OldDG = 0).
+
+
+%------------CASE 5--------------------
+%a white walker stays dead, if it was dead in the previous situation whatever the action is.
+whiteWalker(Col, Row, 0, result(Action, Situation)):-
+    whiteWalker(Col, Row, 0, Situation),
     ((Action = kill); (Action = refill); (Action = up); (Action = down); (Action = left); (Action = right)).
 
 
 
-% for all white walkers their alive flag is 0
+%%main predicate to run the code where Query represent query to be used
+run(Query):-
+  run_helper(Query,3).
 
-findPath(S):-
-    forall(whiteWalker(X,Y,1,s0),
-    whiteWalker(X,Y,0,S)).
-
-findPath2(S):-
-    run((whiteWalker(0,2,0,S),whiteWalker(2,0,0,S))).
-
-
-
-%%main predicate to run the code where Q represent query to be used
-run(Q):-
-  run_helper(Q,3).
-
-%%helper for the main predicate just to have the initial starting depth called I
-run_helper(Q, I):-
-  call_with_depth_limit(Q,I,R),
-  run_helper2(Q,I,R).
+%%helper for the main predicate just to have the initial starting depth limit called Limit
+run_helper(Query, Limit):-
+  call_with_depth_limit(Query,Limit,R),
+  run_helper2(Query,Limit,R).
 
 %%checks if R is not depth_limit_exceeded then the agent have found a solution so it stops and returns this solution
 run_helper2(_, _, R):-
   R \= depth_limit_exceeded.
 
 %%checks if R is depth_limit_exceeded then the agent have not found a solution so it increments the depth to search in a deeper level
-run_helper2(Q, I, R):-
+run_helper2(Query, Limit, R):-
   R == depth_limit_exceeded,
-  I1 is I +1,
-  run_helper(Q,I1).
+  NewLimit is Limit + 1,
+  run_helper(Query,NewLimit).
