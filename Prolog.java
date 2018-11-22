@@ -32,7 +32,7 @@ public class Prolog {
 				statement = "empty(" + i +"," + j + ")";
 				break;
 			case "W":
-				statement = "whiteWalker(" + i +"," + j + ")";
+				statement = "whiteWalker(" + i +"," + j + ", 1" + "s0)";
 				break;
 			case "O":
 				statement = "obstacle(" + i +"," + j + ")";
@@ -41,7 +41,7 @@ public class Prolog {
 				statement = "dragonGlass(" + i +"," + j + ")";
 				break;
 			case "J":
-				statement = "jonSnow(" + i +"," + j + ")";
+				statement = "jonAt(" + i +"," + j + ", 0, s0)";
 				break;
 		}
 		KB  = KB + statement + ".\n";
