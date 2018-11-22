@@ -1,25 +1,10 @@
 
-%% WW EE WW
-%% EE EE EE
-%% OO DS JS
-
-discontiguous(whiteWalker/4).
-discontiguous(jonAt/4).
-
-obstacle(0, 2).
-
-dragonStone(1,2).
-
-maxGlass(2).
-
-gridShape(3,3).
+:- discontiguous(whiteWalker/4).
+:- discontiguous(jonAt/4).
+:- include('kb1.pl').
 
 
-jonAt(2, 2, 0, s0).
 
-whiteWalker(0, 0, 1, s0).      
-whiteWalker(2, 0, 1, s0).
-whiteWalker(0, 1, 1, s0).
 
 %checks if the cell is valid: does not have a living white walker, nor an obstacle and within the grid dimenions.
 validCell(X, Y, Situation):-
@@ -42,6 +27,7 @@ validCell(X, Y, Situation):-
 jonAt(Col,Row, CurrentDG, result(Action, Situation)):-
     nonvar(Col),
     nonvar(Row),
+    validCell(Col,Row, Situation),
     LeftCol is Col - 1,
     RightCol is Col + 1,
     DownRow is Row + 1,
@@ -49,8 +35,7 @@ jonAt(Col,Row, CurrentDG, result(Action, Situation)):-
     ((Action = right, jonAt(LeftCol, Row, CurrentDG, Situation));
      (Action = left, jonAt(RightCol, Row, CurrentDG, Situation));
      (Action = up, jonAt(Col, DownRow, CurrentDG, Situation));
-     (Action = down, jonAt(Col, UpRow, CurrentDG, Situation))),
-    validCell(Col,Row, Situation).
+     (Action = down, jonAt(Col, UpRow, CurrentDG, Situation))).
 
 
 %-----------CASE 2------------
@@ -58,9 +43,10 @@ jonAt(Col,Row, CurrentDG, result(Action, Situation)):-
 
 jonAt(Col, Row, CurrentDG, result(Action, Situation)):-
     (Action = kill),
-    nonvar(CurrentDG),
-    OldDG is CurrentDG + 1,
     jonAt(Col, Row, OldDG, Situation),
+    nonvar(OldDG),
+    CurrentDG is OldDG - 1,
+    \+ (CurrentDG = -1),
     nonvar(Col),
     nonvar(Row),
     RightCol is Col + 1,
@@ -72,14 +58,12 @@ jonAt(Col, Row, CurrentDG, result(Action, Situation)):-
 
 %-----------CASE 3------------
 % if action is refill
-% check if there is a dragon stone in this cell, update current DragonGlass to the maximum value.
+% check if there is a dragon stone in this cell and Jon has no dragonGlass, update current DragonGlass to the maximum value.
 
-jonAt(Col, Row, MaxDG, result(Action, Situation)):-
+jonAt(Col, Row, MaxDG, result(refill, Situation)):-
+    jonAt(Col, Row, 0, Situation),
     maxGlass(MaxDG),
-    (Action = refill),
-    dragonStone(Col, Row),
-    jonAt(Col, Row, _, Situation).
-
+    dragonStone(Col, Row).
 
 
 
@@ -143,18 +127,17 @@ whiteWalker(Col, Row, 0, result(kill, Situation)):-
     LeftCol is Col - 1,
     DownRow is Row + 1,
     UpRow is Row - 1,
-    (jonAt(RightCol, Row, OldDG, Situation);
-    jonAt(LeftCol, Row, OldDG, Situation);
-    jonAt(Col, DownRow, OldDG, Situation);
-    jonAt(Col, UpRow, OldDG, Situation)),
-    \+ (OldDG = 0).
+    ((jonAt(RightCol, Row, OldDG1, Situation), \+ (OldDG1 = 0));
+    (jonAt(LeftCol, Row, OldDG2, Situation), \+ (OldDG2 = 0));
+    (jonAt(Col, DownRow, OldDG3, Situation), \+ (OldDG3 = 0));
+    (jonAt(Col, UpRow, OldDG4, Situation), \+ (OldDG4 = 0))).
 
 
 %------------CASE 5--------------------
 %a white walker stays dead, if it was dead in the previous situation whatever the action is.
-whiteWalker(Col, Row, 0, result(Action, Situation)):-
-    whiteWalker(Col, Row, 0, Situation),
-    ((Action = kill); (Action = refill); (Action = up); (Action = down); (Action = left); (Action = right)).
+whiteWalker(Col, Row, 0, result(_, Situation)):-
+    whiteWalker(Col, Row, 0, Situation).
+    %((Action = kill); (Action = refill); (Action = up); (Action = down); (Action = left); (Action = right)).
 
 
 
