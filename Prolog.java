@@ -20,7 +20,8 @@ public class Prolog {
 	private static final String OBSTACLE = "O";
 	private static void setRandomVars() {
 		capacityOfDG = (int)(Math.random() * 5) +1;
-		whiteWalkersCapacity = (int)(Math.random() * ((worldRows*worldCols)/2)) + 1;
+		// whiteWalkersCapacity = (int)(Math.random() * ((worldRows*worldCols)/2)) + 1;
+		whiteWalkersCapacity = 2;
 		whiteWalkersPositions = new int[whiteWalkersCapacity][2];
 		obstaclesCapacity = (int)(Math.random() * ((worldRows*worldCols)/8)) + 1; 
 	}
@@ -32,25 +33,42 @@ public class Prolog {
 				statement = "empty(" + i +"," + j + ")";
 				break;
 			case "W":
-				statement = "whiteWalker(" + i +"," + j + ", 1" + "s0)";
+				statement = "whiteWalker(" + i +"," + j + ",1" + ",s0)";
 				break;
 			case "O":
 				statement = "obstacle(" + i +"," + j + ")";
 				break;
 			case "D":
-				statement = "dragonGlass(" + i +"," + j + ")";
+				statement = "dragonStone(" + i +"," + j + ")";
 				break;
 			case "J":
-				statement = "jonAt(" + i +"," + j + ", 0, s0)";
+				statement = "jonAt(" + i +"," + j + ",0,s0)";
 				break;
 		}
 		KB  = KB + statement + ".\n";
 	}
 
+
+/**
+killWalkers(S):-
+    run((whiteWalker(2,0,0,S),whiteWalker(0,2,0,S)),S).
+ */
+	private static void addQueryToKb() {
+		String query = "\nkillWalkers(S):-\n";
+		query += "\trun((";
+		for(int i = 0; i < whiteWalkersPositions.length; i++) {
+			query += "whiteWalker(" + whiteWalkersPositions[i][0] + "," + whiteWalkersPositions[i][1] + ",0,S)";
+			if (i + 1 != whiteWalkersPositions.length)
+				query += ",";
+		}
+		query += ")).\n\n";
+		KB = KB + query;
+	}
+
 	public static void writeKBToFile() {
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter("kb.pl", "UTF-8");
+			writer = new PrintWriter("kb3.pl", "UTF-8");
 			writer.print(KB);
 			writer.close();
 		} catch (FileNotFoundException e) {
@@ -125,6 +143,7 @@ public class Prolog {
 				obstaclesCreated++;
 			}
 		}
+		addQueryToKb();
 		addDefaultsToKB();
 		return world;
 	}
@@ -135,7 +154,7 @@ public class Prolog {
 				if (i == grid.length - 1 && j == grid[i].length - 1 && original) {
 					System.out.print("J ");
 				} else {
-					System.out.print(grid[i][j] + " ");
+					System.out.print(grid[j][i] + " ");
 				}
 			}
 			System.out.println();
@@ -144,7 +163,7 @@ public class Prolog {
 	}
 
 	public static void main(String[] args) {
-		String[][] world = genGrid(5, 5);
+		String[][] world = genGrid(3, 3);
 		printGrid(world, true);
 		writeKBToFile();
 		System.out.println(KB);
